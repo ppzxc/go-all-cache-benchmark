@@ -203,7 +203,7 @@ func BenchmarkMemoryTTLCache(b *testing.B) {
 	})
 }
 
-func BenchmarkDiskBadger(b *testing.B) {
+func benchmarkDiskBadger(b *testing.B) {
 	create, _ := os.Getwd()
 	db, err := bg.Open(bg.DefaultOptions(create + "/tmp").WithLogger(nil))
 	if err != nil {
@@ -255,7 +255,7 @@ func RemoveContents(dir string) error {
 	return nil
 }
 
-func BenchmarkMemoryBadger(b *testing.B) {
+func benchmarkMemoryBadger(b *testing.B) {
 	db, err := bg.Open(bg.DefaultOptions("").WithInMemory(true).WithLogger(nil))
 	if err != nil {
 		log.Fatal(err)
