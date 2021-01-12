@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rand"
 	"github.com/OrlovEvgeny/go-mcache"
 	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/akyoto/cache"
@@ -16,6 +17,16 @@ import (
 	"testing"
 	"time"
 )
+
+var HALF = 32768
+var RandomBytes = GenerateRandomBytes(HALF)
+var LenRandomBytes = int64(len(RandomBytes))
+
+func GenerateRandomBytes(n int) []byte {
+	b := make([]byte, n)
+	_, _ = rand.Read(b)
+	return b
+}
 
 func BenchmarkMemoryGCache(b *testing.B) {
 	lru := gcache.New(b.N).LRU().Build()
