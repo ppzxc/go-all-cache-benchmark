@@ -32,7 +32,7 @@ cat /proc/meminfo
 MemTotal    : 11983936 kB
 ```
 
-## normal bench, using 32,768 bytes data
+## normal bench, using 1024 bytes data
 ```
 go test -bench=. -cpu=4 -benchmem
 ```
@@ -71,7 +71,7 @@ PASS
 ok  	github.com/ppzxc/go-all-cache-benchmark	78.609s
 ```
 
-## fix count bench, using 32,768 bytes data
+## fix count bench, using 1024 bytes data
 ```
 go test -bench=. -cpu=4  -benchmem -benchtime 1000000x
 ```
@@ -106,7 +106,7 @@ PASS
 ok  	github.com/ppzxc/go-all-cache-benchmark	38.561s
 ```
 
-## fix time bench, using 32,768 bytes data
+## fix time bench, using 1024 bytes data
 ```
 go test -bench=. -cpu=4  -benchmem -benchtime 10s
 ```

@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-var HALF = 512
+var HALF = 1024
 var RandomBytes = GenerateRandomBytes(HALF)
 var LenRandomBytes = int64(len(RandomBytes))
 
