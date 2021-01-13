@@ -7,18 +7,19 @@ import (
 	"github.com/akyoto/cache"
 	"github.com/allegro/bigcache"
 	"github.com/bluele/gcache"
+	"github.com/coocood/freecache"
 	bg "github.com/dgraph-io/badger/v2"
+	"github.com/dgraph-io/ristretto"
 	"github.com/muesli/cache2go"
 	gc "github.com/patrickmn/go-cache"
 	"log"
 	"os"
-	"path/filepath"
 	"strconv"
 	"testing"
 	"time"
 )
 
-var HALF = 32768
+var HALF = 512
 var RandomBytes = GenerateRandomBytes(HALF)
 var LenRandomBytes = int64(len(RandomBytes))
 
@@ -216,7 +217,8 @@ func BenchmarkMemoryTTLCache(b *testing.B) {
 
 func benchmarkDiskBadger(b *testing.B) {
 	create, _ := os.Getwd()
-	db, err := bg.Open(bg.DefaultOptions(create + "/tmp").WithLogger(nil))
+	diskPath := create + "/tmp/badger"
+	db, err := bg.Open(bg.DefaultOptions(diskPath).WithLogger(nil))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -247,26 +249,9 @@ func benchmarkDiskBadger(b *testing.B) {
 			})
 		}
 	})
-
-	RemoveContents(create + "/tmp")
-	db.Close()
 }
 
-func RemoveContents(dir string) error {
-	files, err := filepath.Glob(filepath.Join(dir, "*"))
-	if err != nil {
-		return err
-	}
-	for _, file := range files {
-		err = os.RemoveAll(file)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func benchmarkMemoryBadger(b *testing.B) {
+func BenchmarkMemoryBadger(b *testing.B) {
 	db, err := bg.Open(bg.DefaultOptions("").WithInMemory(true).WithLogger(nil))
 	if err != nil {
 		log.Fatal(err)
@@ -357,6 +342,55 @@ func BenchmarkMemoryGoCache(b *testing.B) {
 	b.Run("Get", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			if value, ok := goc.Get(strconv.Itoa(i)); ok {
+				b.SetBytes(LenRandomBytes)
+				_ = value
+			}
+		}
+	})
+}
+
+func BenchmarkMemoryRistretto(b *testing.B) {
+	r, _ := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 1e7,     // Num keys to track frequency of (10M).
+		MaxCost:     8 << 30, // Maximum cost of cache (1GB).
+		BufferItems: 64,      // Number of keys per Get buffer.
+	})
+	defer r.Close()
+	defer r.Clear()
+
+	b.Run("Set", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			if ok := r.Set(strconv.Itoa(i), RandomBytes, 1); ok {
+				b.SetBytes(LenRandomBytes)
+			}
+		}
+	})
+
+	b.Run("Get", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			if value, ok := r.Get(strconv.Itoa(i)); ok {
+				b.SetBytes(LenRandomBytes)
+				_ = value
+			}
+		}
+	})
+}
+
+func BenchmarkMemoryFreeCache(b *testing.B) {
+	fc := freecache.NewCache(4000 * 1024 * 1024)
+	defer fc.Clear()
+
+	b.Run("Set", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			if err := fc.Set([]byte(strconv.Itoa(i)), RandomBytes, 60); err == nil {
+				b.SetBytes(LenRandomBytes)
+			}
+		}
+	})
+
+	b.Run("Get", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			if value, err := fc.Get([]byte(strconv.Itoa(i))); err == nil {
 				b.SetBytes(LenRandomBytes)
 				_ = value
 			}

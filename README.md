@@ -9,6 +9,8 @@
 - [Cache](https://github.com/akyoto/cache)
 - [Cache2go](https://github.com/muesli/cache2go)
 - [Go-Cache](https://github.com/patrickmn/go-cache)
+- [Ristretto](https://github.com/dgraph-io/ristretto)
+- [FreeCache](https://github.com/coocood/freecache)
 
 ## disk
 - Todo [Badger](https://github.com/dgraph-io/badger)
