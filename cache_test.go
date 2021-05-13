@@ -10,6 +10,7 @@ import (
 	"github.com/coocood/freecache"
 	bg "github.com/dgraph-io/badger/v2"
 	"github.com/dgraph-io/ristretto"
+	"github.com/karlseguin/ccache/v2"
 	"github.com/muesli/cache2go"
 	gc "github.com/patrickmn/go-cache"
 	"log"
@@ -145,6 +146,29 @@ func BenchmarkMemoryMCache(b *testing.B) {
 			value, ok := mc.Get(strconv.Itoa(i))
 			if ok {
 				_ = value
+				b.SetBytes(LenRandomBytes)
+			}
+		}
+	})
+}
+
+func BenchmarkMemoryCCache(b *testing.B) {
+	var c = ccache.New(ccache.Configure())
+	defer c.Clear()
+
+	b.Run("Set", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			c.Set(strconv.Itoa(i), RandomBytes, 5*time.Minute)
+			b.SetBytes(LenRandomBytes)
+		}
+	})
+
+	b.Run("Get", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			item := c.Get(strconv.Itoa(i))
+			if item != nil {
+				v := item.Value()
+				_ = v
 				b.SetBytes(LenRandomBytes)
 			}
 		}

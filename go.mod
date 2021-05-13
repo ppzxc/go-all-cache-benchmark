@@ -11,6 +11,7 @@ require (
 	github.com/coocood/freecache v1.1.1
 	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/dgraph-io/ristretto v0.0.3-0.20200630154024-f66de99634de
+	github.com/karlseguin/ccache/v2 v2.0.8
 	github.com/muesli/cache2go v0.0.0-20201208071950-e3e970b4892f
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 )
